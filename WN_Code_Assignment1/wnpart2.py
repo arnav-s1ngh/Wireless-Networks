@@ -8,6 +8,7 @@ import re
 beacondata=pd.read_csv("beacons.csv")
 print(list(beacondata["SSID"]))
 print(list(set(list(beacondata["SSID"]))), len(beacondata["SSID"]))
+ssid_data=list(beacondata["SSID"])
 print(" ")
 
 #Part-B
@@ -20,6 +21,19 @@ print(" ")
 sigstren=[int(i[0:3]) for i in list(beacondata["Signal strength (dBm)"])]
 print(sigstren, len(sigstren))
 print("The Average Signal Strength is:-", sum(sigstren)/len(sigstren),"dBm")
+print(" ")
+
+#after the prelim completion, creating functions to find avg for each ap since i didn't read the fricking fine lines
+def indivavg(ssid_set):
+    for j in ssid_set:
+        loc_b = []
+        loc_s = []
+        for i in range(len(bitrate)):
+            if ssid_data[i]==j:
+                loc_s.append(sigstren[i])
+                loc_b.append(bitrate[i])
+        print("the avg sigstren and bitrate for ", j, "is ",sum(loc_s)/len(loc_s),"dBm and ", sum(loc_b)/len(loc_b), "Mb/s respectively")
+print(indivavg((list(set(list(beacondata["SSID"]))))))
 print(" ")
 
 #Part D

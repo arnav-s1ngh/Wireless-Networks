@@ -84,7 +84,7 @@ int main(int argc, char* argv[]) {
 
    ApplicationContainer clientApps = echoClient.Install(wifi_nodes.Get(nw-1));
    clientApps.Start(Seconds(2.0));
-   clientApps.Stop(Seconds(20.0));
+   clientApps.Stop(Seconds(10.0));
    phy.EnablePcap("wifi-p2p", ap_device.Get(0));
 
 

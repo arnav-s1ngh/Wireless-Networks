@@ -50,13 +50,9 @@ int main(int argc, char* argv[]) {
    mobility.Install(p2p_nodes);
 
 
-
-
    InternetStackHelper stack;
    stack.Install(wifi_nodes);
    stack.Install(p2p_nodes);
-
-
 
 
    Ipv4AddressHelper address;
@@ -67,11 +63,8 @@ int main(int argc, char* argv[]) {
    address.Assign(ap_device);
 
 
-
-
-   // Application setup: Download 5MB from the server
    UdpEchoServerHelper echoServer(9);
-   ApplicationContainer serverApps = echoServer.Install(p2p_nodes.Get(0)); // Server node
+   ApplicationContainer serverApps = echoServer.Install(p2p_nodes.Get(0));
    serverApps.Start(Seconds(1.0));
    serverApps.Stop(Seconds(10.0));
 
@@ -79,14 +72,12 @@ int main(int argc, char* argv[]) {
    UdpEchoClientHelper echoClient(p2p_interfaces.GetAddress(0), 9);
    echoClient.SetAttribute("MaxPackets", UintegerValue(1));
    echoClient.SetAttribute("Interval", TimeValue(Seconds(1.0)));
-   echoClient.SetAttribute("PacketSize", UintegerValue(1024)); // 5MB
-
-
+   echoClient.SetAttribute("PacketSize", UintegerValue(1024)); 
    ApplicationContainer clientApps = echoClient.Install(wifi_nodes.Get(nw-1));
    clientApps.Start(Seconds(2.0));
    clientApps.Stop(Seconds(10.0));
    phy.EnablePcap("wifi-p2p", ap_device.Get(0));
-   Ipv4GlobalRoutingHelper::PopulateRoutingTables();
+   Ipv4GlobalRoutingHelper::PopulateRoutingTables(); //esablishes connections among the nodes, server can't respond to the client's requests without populating the table
    Simulator::Stop(Seconds(10.0));
    Simulator::Run();
    Simulator::Destroy();

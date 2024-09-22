@@ -82,7 +82,7 @@ int main(int argc, char* argv[]) {
    echoClient.SetAttribute("PacketSize", UintegerValue(1024)); // 5MB
 
 
-   ApplicationContainer clientApps = echoClient.Install(p2p_nodes.Get(0));
+   ApplicationContainer clientApps = echoClient.Install(wifi_nodes.Get(nw-1));
    clientApps.Start(Seconds(2.0));
    clientApps.Stop(Seconds(20.0));
    phy.EnablePcap("wifi-p2p", ap_device.Get(0));

@@ -71,9 +71,8 @@ int main(int argc, char* argv[]) {
   sourceApps.Stop (Seconds (10.0));
 
   PacketSinkHelper sink ("ns3::TcpSocketFactory",InetSocketAddress (Ipv4Address::GetAny (), 9));
-  uint_32 tim=0;
   for (uint32_t i=0; i<nw ; i++){
-    ApplicationContainer sinkApps = sink.Install (wifi_nodes.Get(nw-1));
+    ApplicationContainer sinkApps = sink.Install (wifi_nodes.Get(i));
     sinkApps.Start (Seconds (0.0));
     sinkApps.Stop (Seconds (10.0));
   }

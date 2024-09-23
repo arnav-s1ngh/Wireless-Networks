@@ -1,4 +1,3 @@
-
 #include "ns3/applications-module.h"
 #include "ns3/core-module.h"
 #include "ns3/csma-module.h"
@@ -64,27 +63,33 @@ int main(int argc, char* argv[]) {
    address.Assign(ap_device);
 
   //Change the application
-  for(int cl_num=0;cl_num++;cl_num<nw){
-      BulkSendHelper source ("ns3::TcpSocketFactory", InetSocketAddress (wifi_interfaces.GetAddress (cl_num), 9));
-      source.SetAttribute ("MaxBytes", UintegerValue(5*1024*1024));
-      ApplicationContainer sourceApps = source.Install (p2p_nodes.Get (0));
-      sourceApps.Start (Seconds (0.0));
-      sourceApps.Stop (Seconds (50.0));
+  int cl_num=0;
+  BulkSendHelper source ("ns3::TcpSocketFactory", InetSocketAddress (wifi_interfaces.GetAddress (cl_num), 9));
+  source.SetAttribute ("MaxBytes", UintegerValue(5*1024*1024));
+  ApplicationContainer sourceApps = source.Install (p2p_nodes.Get (0));
+  sourceApps.Start (Seconds (0.0));
+  sourceApps.Stop (Seconds (50.0));
 
-      PacketSinkHelper sink ("ns3::TcpSocketFactory",InetSocketAddress (Ipv4Address::GetAny (), 9));
-      ApplicationContainer sinkApps = sink.Install (wifi_nodes.Get(cl_num));
-      sinkApps.Start (Seconds (0.0));
-      sinkApps.Stop (Seconds (50.0));
-      Ipv4GlobalRoutingHelper::PopulateRoutingTables(); 
-      Simulator::Stop(Seconds(50.0));
-      Time begin=Simulator::Now();
-      Simulator::Run();
-      Time end=Simulator::Now();
-      Simulator::Destroy();
-      Ptr<PacketSink> sink1 = DynamicCast<PacketSink> (sinkApps.Get (0));
-      std::cout << "Total Bytes Received: " << sink1->GetTotalRx () << std::endl;
-      std::cout<< "Time Taken" << end-begin<< std::endl;
-  }
+  PacketSinkHelper sink ("ns3::TcpSocketFactory",InetSocketAddress (Ipv4Address::GetAny (), 9));
+  ApplicationContainer sinkApps = sink.Install (wifi_nodes.Get(cl_num));
+  sinkApps.Start (Seconds (0.0));
+  sinkApps.Stop (Seconds (50.0));
+  OnOffHelper onOffHelper ("ns3::UdpSocketFactory", InetSocketAddress (p2p_interfaces.GetAddress (0), 9));
+  onOffHelper.SetAttribute ("PacketSize", UintegerValue (1024));
+  ApplicationContainer uploadApp = onOffHelper.Install (wifi_nodes.Get(0));
+  uploadApp.Start (Seconds (1.0));   
+  uploadApp.Stop (Seconds (50.0));   
+  
+  
+  Ipv4GlobalRoutingHelper::PopulateRoutingTables(); 
+  Simulator::Stop(Seconds(50.0));
+  Time begin=Simulator::Now();
+  Simulator::Run();
+  Time end=Simulator::Now();
+  Simulator::Destroy();
 
+  Ptr<PacketSink> sink1 = DynamicCast<PacketSink> (sinkApps.Get (0));
+  std::cout << "Total Bytes Received: " << sink1->GetTotalRx () << std::endl;
+  std::cout<< "Time Taken" << end-begin<< std::endl;
   return 0;
 }

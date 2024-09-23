@@ -63,26 +63,28 @@ int main(int argc, char* argv[]) {
    address.Assign(ap_device);
 
   //Change the application
-
-  BulkSendHelper source ("ns3::TcpSocketFactory", InetSocketAddress (i.GetAddress (1), 9));
-  source.SetAttribute ("MaxBytes", 5*1024*1024);
+  int cl_num=0;
+  BulkSendHelper source ("ns3::TcpSocketFactory", InetSocketAddress (wifi_interfaces.GetAddress (cl_num), 9));
+  source.SetAttribute ("MaxBytes", UintegerValue(5*1024*1024));
   ApplicationContainer sourceApps = source.Install (p2p_nodes.Get (0));
   sourceApps.Start (Seconds (0.0));
-  sourceApps.Stop (Seconds (10.0));
+  sourceApps.Stop (Seconds (50.0));
 
   PacketSinkHelper sink ("ns3::TcpSocketFactory",InetSocketAddress (Ipv4Address::GetAny (), 9));
-  for (uint32_t i=0; i<nw ; i++){
-    ApplicationContainer sinkApps = sink.Install (wifi_nodes.Get(i));
-    sinkApps.Start (Seconds (0.0));
-    sinkApps.Stop (Seconds (10.0));
-  }
+  ApplicationContainer sinkApps = sink.Install (wifi_nodes.Get(cl_num));
+  sinkApps.Start (Seconds (0.0));
+  sinkApps.Stop (Seconds (50.0));
   
+  
+  Ipv4GlobalRoutingHelper::PopulateRoutingTables(); 
+  Simulator::Stop(Seconds(50.0));
+  Time begin=Simulator::Now();
+  Simulator::Run();
+  Time end=Simulator::Now();
+  Simulator::Destroy();
 
-   // Ipv4GlobalRoutingHelper::PopulateRoutingTables(); //esablishes connections among the nodes, server can't respond to the client's requests without populating the table
-   Simulator::Stop(Seconds(10.0));
-   Simulator::Run();
-   Simulator::Destroy();
-
-
-   return 0;
+  Ptr<PacketSink> sink1 = DynamicCast<PacketSink> (sinkApps.Get (0));
+  std::cout << "Total Bytes Received: " << sink1->GetTotalRx () << std::endl;
+  std::cout<< "Time Taken" << end-begin<< std::endl;
+  return 0;
 }

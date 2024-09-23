@@ -33,13 +33,14 @@ int main(int argc, char* argv[]) {
    WifiMacHelper mac;
    Ssid ssid=Ssid("ns-3-ssid");
    WifiHelper wifi;
+   NodeContainer ap_node=p2p_nodes.Get(1);
    wifi.SetRemoteStationManager("ns3::ConstantRateWifiManager","DataMode",StringValue("HtMcs7"),"ControlMode",StringValue("HtMcs0"));
    NetDeviceContainer wifi_devices;
    NetDeviceContainer ap_device;
    mac.SetType("ns3::StaWifiMac","Ssid",SsidValue(ssid));
    wifi_devices=wifi.Install(phy,mac,wifi_nodes);
    mac.SetType("ns3::ApWifiMac","Ssid",SsidValue(ssid));
-   ap_device=wifi.Install(phy,mac,p2p_nodes.Get(1));
+   ap_device=wifi.Install(phy,mac,ap_node);
 
 
    MobilityHelper mobility;
@@ -47,11 +48,12 @@ int main(int argc, char* argv[]) {
    mobility.SetMobilityModel("ns3::ConstantPositionMobilityModel");
    mobility.Install(wifi_nodes);
    mobility.SetMobilityModel("ns3::ConstantPositionMobilityModel");
-   mobility.Install(p2p_nodes);
+   mobility.Install(ap_node);
 
 
    InternetStackHelper stack;
    stack.Install(wifi_nodes);
+   stack.Install(ap_node);
    stack.Install(p2p_nodes);
 
 

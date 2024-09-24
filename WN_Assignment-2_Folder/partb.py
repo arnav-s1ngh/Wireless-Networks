@@ -1,7 +1,6 @@
 import matplotlib.pyplot as plt
-n=100
-y=[50]*n
-x=list(range(1,n+1))
+y=[47,26,9,8,8]
+x=list(range(1,6))
 plt.plot(x,y)
 plt.xlabel("Nodes")
 plt.ylabel("Time in Seconds")

@@ -85,8 +85,8 @@ int main(int argc, char* argv[]) {
    Ipv4GlobalRoutingHelper::PopulateRoutingTables(); 
    Simulator::Stop(Seconds(50.0));
    Time begin=Simulator::Now();
-   p2pconn.EnablePcapAll("partc_p2p_pcap",false);
-   phy.EnablePcapAll ("partc_wifi_pcap",false);
+   p2pconn.EnablePcapAll("partd_p2p_pcap",false);
+   phy.EnablePcapAll ("partd_wifi_pcap",false);
    Simulator::Run();
    Time end=Simulator::Now();
    Simulator::Destroy();

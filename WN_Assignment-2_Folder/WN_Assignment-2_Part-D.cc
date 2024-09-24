@@ -28,13 +28,17 @@ int main(int argc, char* argv[]) {
    p2pconn.SetChannelAttribute("Delay",StringValue("100ms"));
    NetDeviceContainer p2p_devices;
    p2p_devices=p2pconn.Install(p2p_nodes);
+
+   //https://github.com/named-data-ndnSIM/ndnSIM/blob/master/examples/ndn-simple-wifi.cpp, used this to select the path loss and fading models
    YansWifiChannelHelper channel=YansWifiChannelHelper::Default();
+   channel.AddPropagationLoss("ns3::ThreeLogDistancePropagationLossModel");
+   channel.AddPropagationLoss("ns3::NakagamiPropagationLossModel");
    YansWifiPhyHelper phy;
    phy.SetChannel(channel.Create()); // Unlike Ethernet, AP not added to NodeContainer
    WifiMacHelper mac;
    Ssid ssid=Ssid("ns-3-ssid");
    WifiHelper wifi;
-   wifi.SetRemoteStationManager("ns3::ConstantRateWifiManager","DataMode",StringValue("HtMcs7"),"ControlMode",StringValue("HtMcs0"));
+   wifi.SetRemoteStationManager("ns3::MinstrelHtWifiManager");
    NetDeviceContainer wifi_devices;
    NetDeviceContainer ap_device;
    mac.SetType("ns3::StaWifiMac","Ssid",SsidValue(ssid));

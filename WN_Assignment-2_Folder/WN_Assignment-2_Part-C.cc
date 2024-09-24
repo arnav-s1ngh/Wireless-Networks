@@ -11,6 +11,7 @@
 #include "ns3/wifi-mac-helper.h"
 #include "ns3/yans-wifi-channel.h"
 #include "ns3/mobility-helper.h"
+#include <ctime>
 using namespace ns3;
 NS_LOG_COMPONENT_DEFINE("WN_Assignment-2");
 int main(int argc, char* argv[]) {
@@ -63,33 +64,47 @@ int main(int argc, char* argv[]) {
    address.Assign(ap_device);
 
   //Change the application
+  clock_t time_req;
+  clock_t tim2;
   for(int cl_num=0;cl_num<nw;cl_num++){
-  BulkSendHelper source ("ns3::TcpSocketFactory", InetSocketAddress (p2p_interfaces.GetAddress (0), 9));
+  time_req=clock();
+  BulkSendHelper source ("ns3::TcpSocketFactory", InetSocketAddress (wifi_interfaces.GetAddress (cl_num), 9));
   source.SetAttribute ("MaxBytes", UintegerValue(5*1024*1024));
-  ApplicationContainer sourceApps = source.Install (wifi_nodes.Get (cl_num));
+  ApplicationContainer sourceApps = source.Install (p2p_nodes.Get (0));
   sourceApps.Start (Seconds (0.0));
   sourceApps.Stop (Seconds (50.0));
+  time_req=clock()-time_req;
+  std::cout<<"[DOWNLOAD] Time Taken for Client" << cl_num<<std::endl;
+  std::cout<<time_req<<std::endl;
+  PacketSinkHelper sink ("ns3::TcpSocketFactory",InetSocketAddress (Ipv4Address::GetAny (), 9));
+  ApplicationContainer sinkApps = sink.Install (wifi_nodes.Get(cl_num));
+  sinkApps.Start (Seconds (0.0));
+  sinkApps.Stop (Seconds (50.0));
+  Ptr<PacketSink> sink1 = DynamicCast<PacketSink> (sinkApps.Get (0));
+  std::cout << "Total Bytes Received: " << sink1->GetTotalRx () << std::endl;
   }
 
 
-  PacketSinkHelper sink ("ns3::TcpSocketFactory",InetSocketAddress (Ipv4Address::GetAny (), 9));
-  ApplicationContainer sinkApps = sink.Install (p2p_nodes.Get(0));
-  sinkApps.Start (Seconds (0.0));
-  sinkApps.Stop (Seconds (50.0));
+  
   
     for (int i = 0; i < nw; i++) {
+        tim2=clock();
         OnOffHelper onOffHelper ("ns3::TcpSocketFactory", InetSocketAddress (p2p_interfaces.GetAddress (0), 10));
         onOffHelper.SetAttribute ("DataRate", StringValue ("200Kbps"));
         ApplicationContainer uploadApp = onOffHelper.Install (wifi_nodes.Get(i));
         uploadApp.Start (Seconds(1.0));
         uploadApp.Stop (Seconds(50.0));
+        tim2=clock()-tim2;
+        std::cout<<" [UPLOAD] Time Taken for Client"<< i << std::endl;
+        std::cout<<tim2<<std::endl;
+        PacketSinkHelper sink2 ("ns3::TcpSocketFactory", InetSocketAddress (Ipv4Address::GetAny (), 10));
+        ApplicationContainer sinkApp2 = sink2.Install (p2p_nodes.Get (0));
+        sinkApp2.Start (Seconds(0.0));
+        sinkApp2.Stop (Seconds(50.0));
+        Ptr<PacketSink> sink9 = DynamicCast<PacketSink> (sinkApp2.Get (0));
+        std::cout << "Total Bytes Received: " << sink9->GetTotalRx () << std::endl;
+        
 }
-
-
-    PacketSinkHelper sink2 ("ns3::TcpSocketFactory", InetSocketAddress (Ipv4Address::GetAny (), 10));
-    ApplicationContainer sinkApp2 = sink2.Install (p2p_nodes.Get (0));
-    sinkApp2.Start (Seconds(0.0));
-    sinkApp2.Stop (Seconds(50.0));
 
   
   
@@ -100,10 +115,7 @@ int main(int argc, char* argv[]) {
   Time end=Simulator::Now();
   Simulator::Destroy();
 
-  Ptr<PacketSink> sink1 = DynamicCast<PacketSink> (sinkApps.Get (0));
-  std::cout << "Total Bytes Received: " << sink1->GetTotalRx () << std::endl;
-  Ptr<PacketSink> sink9 = DynamicCast<PacketSink> (sinkApp2.Get (0));
-  std::cout << "Total Bytes Received: " << sink9->GetTotalRx () << std::endl;
-  std::cout<< "Time Taken" << end-begin<< std::endl;
+  
+  std::cout<< "Simulation Time" << end-begin<< std::endl;
   return 0;
 }

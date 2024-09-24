@@ -63,7 +63,6 @@ int main(int argc, char* argv[]) {
    Ipv4InterfaceContainer wifi_interfaces = address.Assign(wifi_devices);
    address.Assign(ap_device);
    clock_t time_req;
-   clock_t tim2;
    for(int cl_num=0;cl_num<nw;cl_num++){
       time_req=clock();
       BulkSendHelper source ("ns3::TcpSocketFactory", InetSocketAddress (wifi_interfaces.GetAddress (cl_num), 9));

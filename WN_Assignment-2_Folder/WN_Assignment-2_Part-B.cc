@@ -47,7 +47,6 @@ int main(int argc, char* argv[]) {
    mobility.SetPositionAllocator("ns3::GridPositionAllocator","MinX", DoubleValue(0.0),"MinY", DoubleValue(0.0),"DeltaX", DoubleValue(5.0),"DeltaY", DoubleValue(10.0),"GridWidth", UintegerValue(3),"LayoutType", StringValue("RowFirst"));
    mobility.SetMobilityModel("ns3::ConstantPositionMobilityModel");
    mobility.Install(wifi_nodes);
-   mobility.SetMobilityModel("ns3::ConstantPositionMobilityModel");
    mobility.Install(p2p_nodes);
 
 
@@ -62,20 +61,21 @@ int main(int argc, char* argv[]) {
    address.SetBase("10.1.2.0", "255.255.255.0");
    Ipv4InterfaceContainer wifi_interfaces = address.Assign(wifi_devices);
    address.Assign(ap_device);
-   clock_t time_req;
    for(int cl_num=0;cl_num<nw;cl_num++){
-      time_req=clock();
+      std::cout<<"Running Client "<<cl_num+1<<std::endl;
       BulkSendHelper source ("ns3::TcpSocketFactory", InetSocketAddress (wifi_interfaces.GetAddress (cl_num), 9));
       source.SetAttribute ("MaxBytes", UintegerValue(5*1024*1024));
       ApplicationContainer sourceApps = source.Install (p2p_nodes.Get (0));
       sourceApps.Start (Seconds (0.0));
       sourceApps.Stop (Seconds (50.0));
-      time_req=clock()-time_req;
-      std::cout<<"[DOWNLOAD] Time Taken for Client " << cl_num+1<< " is " << time_req<< std::endl;
+      
    }
    Ipv4GlobalRoutingHelper::PopulateRoutingTables(); 
    Simulator::Stop(Seconds(50.0));
+   
    Time begin=Simulator::Now();
+   p2pconn.EnablePcapAll("p2ppcap",false);
+   phy.EnablePcapAll ("wifipcap",false);
    Simulator::Run();
    Time end=Simulator::Now();
    Simulator::Destroy();

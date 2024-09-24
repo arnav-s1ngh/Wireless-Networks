@@ -63,7 +63,7 @@ int main(int argc, char* argv[]) {
    address.Assign(ap_device);
    for(int cl_num=0;cl_num<nw;cl_num++){
       std::cout<<"Running Client "<<cl_num+1<<std::endl;
-      BulkSendHelper source ("ns3::TcpSocketFactory", InetSocketAddress (wifi_interfaces.GetAddress (cl_num), 9));
+      BulkSendHelper source ("ns3::TcpSocketFactory", InetSocketAddress (wifi_interfaces.GetAddress (cl_num), 9+cl_num));
       source.SetAttribute ("MaxBytes", UintegerValue(5*1024*1024));
       ApplicationContainer sourceApps = source.Install (p2p_nodes.Get (0));
       sourceApps.Start (Seconds (0.0));
@@ -74,8 +74,8 @@ int main(int argc, char* argv[]) {
    Simulator::Stop(Seconds(50.0));
    
    Time begin=Simulator::Now();
-   p2pconn.EnablePcapAll("p2ppcap",false);
-   phy.EnablePcapAll ("wifipcap",false);
+   p2pconn.EnablePcapAll("partb_p2p_pcap",false);
+   phy.EnablePcapAll ("partb_wifi_pcap",false);
    Simulator::Run();
    Time end=Simulator::Now();
    Simulator::Destroy();

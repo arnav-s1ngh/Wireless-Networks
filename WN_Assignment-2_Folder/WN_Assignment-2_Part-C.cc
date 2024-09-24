@@ -62,31 +62,27 @@ int main(int argc, char* argv[]) {
    address.SetBase("10.1.2.0", "255.255.255.0");
    Ipv4InterfaceContainer wifi_interfaces = address.Assign(wifi_devices);
    address.Assign(ap_device);
-   clock_t time_req;
-   clock_t tim2;
    for(int cl_num=0;cl_num<nw;cl_num++){
-      time_req=clock();
-      BulkSendHelper source ("ns3::TcpSocketFactory", InetSocketAddress (wifi_interfaces.GetAddress (cl_num), 9));
+      std::cout<<"Running Client "<<cl_num+1<<std::endl;
+      BulkSendHelper source ("ns3::TcpSocketFactory", InetSocketAddress (wifi_interfaces.GetAddress (cl_num), 9+cl_num));
       source.SetAttribute ("MaxBytes", UintegerValue(5*1024*1024));
       ApplicationContainer sourceApps = source.Install (p2p_nodes.Get (0));
       sourceApps.Start (Seconds (0.0));
       sourceApps.Stop (Seconds (50.0));
-      time_req=clock()-time_req;
-      std::cout<<"[DOWNLOAD] Time Taken for Client " << cl_num+1<< " is " << time_req<< std::endl;
    }
    for (int i = 0; i < nw; i++) {
-      tim2=clock();
-      OnOffHelper onOffHelper ("ns3::TcpSocketFactory", InetSocketAddress (p2p_interfaces.GetAddress (0), 10));
+      std::cout<<"Running Client "<<i+1<<std::endl;
+      OnOffHelper onOffHelper ("ns3::TcpSocketFactory", InetSocketAddress (p2p_interfaces.GetAddress (0), 15+i));
       onOffHelper.SetAttribute ("DataRate", StringValue ("200Kbps"));
       ApplicationContainer uploadApp = onOffHelper.Install (wifi_nodes.Get(i));
       uploadApp.Start (Seconds(1.0));
       uploadApp.Stop (Seconds(50.0));
-      tim2=clock()-tim2;
-      std::cout<<" [UPLOAD] Time Taken for Client "<< i+1 << " is " <<tim2<< std::endl;
    }
    Ipv4GlobalRoutingHelper::PopulateRoutingTables(); 
    Simulator::Stop(Seconds(50.0));
    Time begin=Simulator::Now();
+   p2pconn.EnablePcapAll("partc_p2p_pcap",false);
+   phy.EnablePcapAll ("partc_wifi_pcap",false);
    Simulator::Run();
    Time end=Simulator::Now();
    Simulator::Destroy();

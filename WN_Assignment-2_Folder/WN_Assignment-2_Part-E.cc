@@ -39,8 +39,7 @@ int main(int argc, char* argv[]) {
    Ssid ssid=Ssid("ns-3-ssid");
    WifiHelper wifi;
    wifi.SetRemoteStationManager("ns3::MinstrelHtWifiManager");
-   Uintegervalue ctsthr=(enableCtsRts ? UintegerValue (100) : Uintegervalue (2200));
-   Config::SetDefault("ns3::WifiRemoteStationManager::RtsCtsThreshold", ctsthr);
+   Config::SetDefault("ns3::WifiRemoteStationManager::RtsCtsThreshold", StringValue("0");
    NetDeviceContainer wifi_devices;
    NetDeviceContainer ap_device;
    mac.SetType("ns3::StaWifiMac","Ssid",SsidValue(ssid));

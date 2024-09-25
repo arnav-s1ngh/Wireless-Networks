@@ -18,6 +18,7 @@ int main(int argc, char* argv[]) {
    Time::SetResolution(Time::NS);
    LogComponentEnable("UdpEchoClientApplication",LOG_LEVEL_INFO);
    LogComponentEnable("UdpEchoServerApplication",LOG_LEVEL_INFO);
+   Config::SetDefault("ns3::WifiRemoteStationManager::RtsCtsThreshold", StringValue("0");
    int nw=5;
    NodeContainer p2p_nodes;
    p2p_nodes.Create(2); // Server and AP
@@ -39,7 +40,6 @@ int main(int argc, char* argv[]) {
    Ssid ssid=Ssid("ns-3-ssid");
    WifiHelper wifi;
    wifi.SetRemoteStationManager("ns3::MinstrelHtWifiManager");
-   Config::SetDefault("ns3::WifiRemoteStationManager::RtsCtsThreshold", StringValue("0");
    NetDeviceContainer wifi_devices;
    NetDeviceContainer ap_device;
    mac.SetType("ns3::StaWifiMac","Ssid",SsidValue(ssid));

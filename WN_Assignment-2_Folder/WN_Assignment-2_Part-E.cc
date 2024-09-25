@@ -18,7 +18,7 @@ int main(int argc, char* argv[]) {
    Time::SetResolution(Time::NS);
    LogComponentEnable("UdpEchoClientApplication",LOG_LEVEL_INFO);
    LogComponentEnable("UdpEchoServerApplication",LOG_LEVEL_INFO);
-   Config::SetDefault("ns3::WifiRemoteStationManager::RtsCtsThreshold", StringValue("0");
+   Config::SetDefault("ns3::WifiRemoteStationManager::RtsCtsThreshold", StringValue("0"));
    int nw=5;
    NodeContainer p2p_nodes;
    p2p_nodes.Create(2); // Server and AP

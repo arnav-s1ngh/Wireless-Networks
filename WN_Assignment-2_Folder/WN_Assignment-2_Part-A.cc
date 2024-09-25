@@ -78,7 +78,6 @@ int main(int argc, char* argv[]) {
    ApplicationContainer clientApps = echoClient.Install(wifi_nodes.Get(nw-1));
    clientApps.Start(Seconds(2.0));
    clientApps.Stop(Seconds(10.0));
-   phy.EnablePcap("wifi-p2p", ap_device.Get(0));
    Ipv4GlobalRoutingHelper::PopulateRoutingTables(); //esablishes connections among the nodes, server can't respond to the client's requests without populating the table
    Simulator::Stop(Seconds(10.0));
    Simulator::Run();

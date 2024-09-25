@@ -1,7 +1,7 @@
 Submission for WN Assign-2
 
-References
+**References**
 
-The NS3 Documentation at the NSAM Website
+1. The NS3 Documentation at the NSAM Website
 
-The NS3 Google Groups Forum
+2. The NS3 Google Groups Forum

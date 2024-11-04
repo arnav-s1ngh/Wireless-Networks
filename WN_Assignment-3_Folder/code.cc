@@ -6,6 +6,7 @@
 #include "ns3/wifi-module.h"
 #include "ns3/mobility-module.h"
 #include "ns3/netanim-module.h"
+#include "ns3/point-to-point-module.h"
 #include <fstream>
 #include <string>
 
@@ -30,15 +31,15 @@ int main(){
     
     NodeContainer server_node; // Server
     server_node.Create(1);
-    
     // Establish Server-AP P2P Connection
     PointToPointHelper p2pconn;
     p2pconn.SetDeviceAttribute("DataRate",StringValue("1000Mbps"));
     p2pconn.SetChannelAttribute("Delay",StringValue("100ms"));
-    
-    NetDeviceContainer p2pDevices;
-    p2p_server_device=p2pconn.Install(server_node.Get(0));
-    p2p_ap_device=p2pconn.Install(ap_node.Get(0));
+    NodeContainer p2p_nodes;
+    NetDeviceContainer p2p_device;
+    p2p_nodes.Add(ap_node);
+    p2p_nodes.Add(server_node);
+    p2p_device=p2pconn.Install(p2p_nodes);
     
     //Wifi
     WifiHelper wifi;
@@ -46,18 +47,19 @@ int main(){
     wifi.SetRemoteStationManager("ns3::MinstrelHtWifiManager");
     YansWifiPhyHelper phy;
     YansWifiChannelHelper wifiChannel = YansWifiChannelHelper::Default();
+    wifiChannel.AddPropagationLoss("ns3::ThreeLogDistancePropagationLossModel");
+    wifiChannel.AddPropagationLoss("ns3::NakagamiPropagationLossModel");
     phy.SetChannel(wifiChannel.Create());
     
     WifiMacHelper mac;
     Ssid ssid=Ssid("ns-3-ssid");
-    
     //AP
     mac.SetType("ns3::ApWifiMac","Ssid",SsidValue(ssid));
-    NetDeviceContainer apdevice=wifi.Install(phy,mac,ap_node.Get(0));
+    NetDeviceContainer ap_device=wifi.Install(phy,mac,ap_node.Get(0));
 
     //STAs
     mac.SetType("ns3::StaWifiMac","Ssid", SsidValue(ssid));
-    NetDeviceContainer staDevices=wifi.Install(phy,mac,sta_nodes);
+    NetDeviceContainer sta_devices=wifi.Install(phy,mac,sta_nodes);
     
     MobilityHelper mobility;
     mobility.SetPositionAllocator("ns3::GridPositionAllocator","MinX",DoubleValue(0.0),"MinY", DoubleValue(0.0),"DeltaX",DoubleValue(5.0),"DeltaY", DoubleValue(0.0),"GridWidth",UintegerValue(2),"LayoutType", StringValue("RowFirst"));
@@ -71,7 +73,21 @@ int main(){
     InternetStackHelper internet;
     internet.Install(ap_node);
     internet.Install(sta_nodes);
-    internet.install(server_node);
+    internet.Install(server_node);
+    
+    
+    Ipv4AddressHelper address;
+    
+    address.SetBase("10.1.1.0","255.255.255.0");
+    Ipv4InterfaceContainer p2p_interface;
+    p2p_interface=address.Assign(p2p_device);
+ 
+    address.SetBase("10.1.2.0", "255.255.255.0");
+    Ipv4InterfaceContainer ap_interface;
+    Ipv4InterfaceContainer sta_interface;
+    ap_interface=address.Assign(ap_device);
+    sta_interface=address.Assign(sta_devices);
+    
 }
 
 

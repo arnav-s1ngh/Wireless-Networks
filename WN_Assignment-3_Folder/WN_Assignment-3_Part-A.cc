@@ -10,15 +10,21 @@
 #include <fstream>
 #include <string>
 
-// Network Topology
-//                                       Wifi          P2P                  
-//  (n20 n19 n18 ................. n1)=========AP--------------------------Server
-//     Path Loss+Fading                             Delay:- 100 ms
-//     MinstrelHTWifiManager                        Bandwidth:- 1000 Mbps
-
-
 using namespace ns3;
 NS_LOG_COMPONENT_DEFINE ("WN_Assign-3");
+
+// Collision and reception counters
+int totalReceptions = 0;
+int totalCollisions = 0;
+
+// Callback functions
+void PacketReception(Ptr<const Packet> packet) {
+    totalReceptions++;
+}
+
+void PacketCollision(Ptr<const Packet> packet) {
+    totalCollisions++;
+}
 
 int main(){
 
@@ -31,6 +37,7 @@ int main(){
     
     NodeContainer server_node; // Server
     server_node.Create(1);
+
     // Establish Server-AP P2P Connection
     PointToPointHelper p2pconn;
     p2pconn.SetDeviceAttribute("DataRate",StringValue("1000Mbps"));
@@ -39,9 +46,9 @@ int main(){
     NetDeviceContainer p2p_device;
     p2p_nodes.Add(ap_node);
     p2p_nodes.Add(server_node);
-    p2p_device=p2pconn.Install(p2p_nodes);
+    p2p_device = p2pconn.Install(p2p_nodes);
     
-    //Wifi
+    // Wifi setup
     WifiHelper wifi;
     wifi.SetStandard(WIFI_STANDARD_80211n);
     wifi.SetRemoteStationManager("ns3::MinstrelHtWifiManager");
@@ -53,17 +60,17 @@ int main(){
     
     WifiMacHelper mac;
     Ssid ssid=Ssid("ns-3-ssid");
-    //AP
+
+    // AP
     mac.SetType("ns3::ApWifiMac","Ssid",SsidValue(ssid));
     NetDeviceContainer ap_device=wifi.Install(phy,mac,ap_node.Get(0));
 
-    //STAs
+    // STAs
     mac.SetType("ns3::StaWifiMac","Ssid", SsidValue(ssid));
     NetDeviceContainer sta_devices=wifi.Install(phy,mac,sta_nodes);
     
     MobilityHelper mobility;
     mobility.SetPositionAllocator("ns3::GridPositionAllocator","MinX",DoubleValue(0.0),"MinY", DoubleValue(0.0),"DeltaX",DoubleValue(1),"DeltaY", DoubleValue(0.0),"GridWidth",UintegerValue(2),"LayoutType", StringValue("RowFirst"));
-    
     mobility.SetMobilityModel("ns3::ConstantPositionMobilityModel");
     mobility.Install(ap_node);
     mobility.Install(sta_nodes);
@@ -75,9 +82,7 @@ int main(){
     internet.Install(sta_nodes);
     internet.Install(server_node);
     
-    
     Ipv4AddressHelper address;
-    
     address.SetBase("10.1.1.0","255.255.255.0");
     Ipv4InterfaceContainer p2p_interface;
     p2p_interface=address.Assign(p2p_device);
@@ -119,12 +124,19 @@ int main(){
     Ipv4GlobalRoutingHelper::PopulateRoutingTables(); 
     p2pconn.EnablePcapAll("wired_capture",false);
     phy.EnablePcapAll("wireless_capture", false);
+
+    // Connect to reception and collision events
+    Config::Connect("/NodeList/*/DeviceList/*/$ns3::WifiNetDevice/Phy/State/RxOk", MakeCallback(&PacketReception));
+    Config::Connect("/NodeList/*/DeviceList/*/$ns3::WifiNetDevice/Phy/State/RxError", MakeCallback(&PacketCollision));
     
     Simulator::Stop(Seconds(10.0));
     
     Simulator::Run();
-    Simulator::Destroy();
+    
+    // Calculate collision percentage
+    double collisionPercentage = (totalCollisions / (double)(totalReceptions + totalCollisions)) * 100;
+    std::cout << "Collision Percentage: " << collisionPercentage << "%" << std::endl;
 
-    
-    
+    Simulator::Destroy();
 }
+

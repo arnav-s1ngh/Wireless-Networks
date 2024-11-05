@@ -17,12 +17,11 @@ NS_LOG_COMPONENT_DEFINE ("WN_Assign-3");
 int totalReceptions = 0;
 int totalCollisions = 0;
 
-// Callback functions
-void PacketReception(Ptr<const Packet> packet) {
+void PacketReception(std::string context, Ptr<const Packet> packet, double snr, WifiMode mode, WifiPreamble preamble) {
     totalReceptions++;
 }
 
-void PacketCollision(Ptr<const Packet> packet) {
+void PacketCollision(std::string context, Ptr<const Packet> packet, double snr) {
     totalCollisions++;
 }
 
@@ -128,6 +127,8 @@ int main(){
     // Connect to reception and collision events
     Config::Connect("/NodeList/*/DeviceList/*/$ns3::WifiNetDevice/Phy/State/RxOk", MakeCallback(&PacketReception));
     Config::Connect("/NodeList/*/DeviceList/*/$ns3::WifiNetDevice/Phy/State/RxError", MakeCallback(&PacketCollision));
+
+
     
     Simulator::Stop(Seconds(10.0));
     

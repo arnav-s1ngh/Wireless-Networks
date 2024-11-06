@@ -49,7 +49,7 @@ void PhyRxOkTrace(std::string context, Ptr<const Packet> packet, double snr, Wif
         Time responseTime = receiveTime - sendTime;
         
         //std::cout << "Packet ID: " << packetId << ", Response time: " << responseTime.GetMicroSeconds() << " microseconds" << std::endl;
-        resp_time+=responseTime;
+        resp_time+=responseTime.GetMicroSeconds();
         packet_cnt+=1;
         
         // Remove the entry to keep the map clean
@@ -169,7 +169,7 @@ int main() {
     // Calculate collision percentage
     double collisionPercentage = (totalCollisions / (double)(totalReceptions + totalCollisions)) * 100;
     std::cout << "Collision Percentage: " << collisionPercentage << "%" << std::endl;
-    std::cout<<"Response Time: "<<resp_time/packet_cnt<<" microseconds"<<std::endl;
+    std::cout<<"Average Response Time: "<<resp_time/packet_cnt<<" microseconds"<<std::endl;
 
     Simulator::Destroy();
 }

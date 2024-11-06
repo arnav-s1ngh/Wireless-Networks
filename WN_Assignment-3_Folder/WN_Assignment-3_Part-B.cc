@@ -13,6 +13,10 @@
 using namespace ns3;
 NS_LOG_COMPONENT_DEFINE("WN_Assign-3");
 
+// Response Time
+int packet_cnt=0;
+double resp_time=0;
+
 // Collision and reception counters
 int totalReceptions = 0;
 int totalCollisions = 0;
@@ -44,7 +48,9 @@ void PhyRxOkTrace(std::string context, Ptr<const Packet> packet, double snr, Wif
         Time receiveTime = Simulator::Now();
         Time responseTime = receiveTime - sendTime;
         
-        std::cout << "Packet ID: " << packetId << ", Response time: " << responseTime.GetMicroSeconds() << " microseconds" << std::endl;
+        //std::cout << "Packet ID: " << packetId << ", Response time: " << responseTime.GetMicroSeconds() << " microseconds" << std::endl;
+        resp_time+=responseTime;
+        packet_cnt+=1;
         
         // Remove the entry to keep the map clean
         packetSendTimes.erase(packetId);
@@ -163,6 +169,7 @@ int main() {
     // Calculate collision percentage
     double collisionPercentage = (totalCollisions / (double)(totalReceptions + totalCollisions)) * 100;
     std::cout << "Collision Percentage: " << collisionPercentage << "%" << std::endl;
+    std::cout<<"Response Time: "<<resp_time/packet_cnt<<" microseconds"<<std::endl;
 
     Simulator::Destroy();
 }

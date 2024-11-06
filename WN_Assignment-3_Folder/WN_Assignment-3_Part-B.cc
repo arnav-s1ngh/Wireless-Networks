@@ -29,13 +29,13 @@ void PacketCollision(std::string context, Ptr<const Packet> packet, double snr) 
 }
 
 // Callback for PHY transmission
-void PhyTxTrace(Ptr<const Packet> packet) {
+void PhyTxTrace(std::string context, Ptr<const Packet> packet, WifiMode mode, WifiPreamble preamble, uint8_t txPower) {
     // Store the transmission time for each packet based on its ID
     packetSendTimes[packet->GetUid()] = Simulator::Now();
 }
 
 // Callback for PHY reception
-void PhyRxOkTrace(Ptr<const Packet> packet) {
+void PhyRxOkTrace(std::string context, Ptr<const Packet> packet, double snr, WifiMode mode, WifiPreamble preamble) {
     uint32_t packetId = packet->GetUid();
     
     if (packetSendTimes.find(packetId) != packetSendTimes.end()) {
@@ -44,7 +44,7 @@ void PhyRxOkTrace(Ptr<const Packet> packet) {
         Time receiveTime = Simulator::Now();
         Time responseTime = receiveTime - sendTime;
         
-        std::cout << "Packet ID: " << packetId << ", Response time: " << responseTime.GetMilliSeconds() << " ms" << std::endl;
+        std::cout << "Packet ID: " << packetId << ", Response time: " << responseTime.GetMicroSeconds() << " microseconds" << std::endl;
         
         // Remove the entry to keep the map clean
         packetSendTimes.erase(packetId);
@@ -166,4 +166,3 @@ int main() {
 
     Simulator::Destroy();
 }
-

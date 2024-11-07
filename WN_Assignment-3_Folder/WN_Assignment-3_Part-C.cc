@@ -213,3 +213,12 @@ void simulation(int ru_count, bool cent) {
 
     Simulator::Destroy();
 }
+
+int main(){
+   for(int i=0;i<=18;i++){
+     simulation(i,true);
+     simulation(i,false);
+   }
+   
+   return 0;
+}

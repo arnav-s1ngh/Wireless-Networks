@@ -58,8 +58,6 @@ void PhyRxOkTrace(std::string context,Ptr<const Packet> packet,double snr,WifiMo
 }
 
 int main() {
-    Config::Set("/NodeList//DeviceList//$ns3::WifiNetDevice/HeConfiguration",BooleanValue(true)); 
-    Config::Set("/NodeList//DeviceList//$ns3::WifiPhy/OFDMA",BooleanValue(true));
     int nw=20; // Number of STAs in the WiFi network
     NodeContainer sta_nodes;
     sta_nodes.Create(nw);

@@ -10,6 +10,36 @@
 #include <fstream>
 #include <string>
 
+
+#include "ns3/attribute-container.h"
+#include "ns3/boolean.h"
+#include "ns3/command-line.h"
+#include "ns3/config.h"
+#include "ns3/double.h"
+#include "ns3/enum.h"
+#include "ns3/he-phy.h"
+#include "ns3/internet-stack-helper.h"
+#include "ns3/ipv4-address-helper.h"
+#include "ns3/ipv4-global-routing-helper.h"
+#include "ns3/log.h"
+#include "ns3/mobility-helper.h"
+#include "ns3/multi-model-spectrum-channel.h"
+#include "ns3/on-off-helper.h"
+#include "ns3/packet-sink-helper.h"
+#include "ns3/packet-sink.h"
+#include "ns3/spectrum-wifi-helper.h"
+#include "ns3/ssid.h"
+#include "ns3/string.h"
+#include "ns3/udp-client-server-helper.h"
+#include "ns3/udp-server.h"
+#include "ns3/uinteger.h"
+#include "ns3/wifi-acknowledgment.h"
+#include "ns3/yans-wifi-channel.h"
+#include "ns3/yans-wifi-helper.h"
+ 
+#include <algorithm>
+#include <functional>
+
 using namespace ns3;
 NS_LOG_COMPONENT_DEFINE("WN_Assign-3");
 
@@ -104,7 +134,7 @@ int main() {
     NetDeviceContainer sta_devices=wifi.Install(phy,mac,sta_nodes);
 
     // AP
-    mac.SetMultiUserScheduler("ns3::RrMultiUserScheduler","EnableUlOfdma",BooleanValue(false),"EnableBsrp",BooleanValue(false),"AccessReqInterval",TimeValue(0));
+    mac.SetMultiUserScheduler("ns3::RrMultiUserScheduler","EnableUlOfdma",BooleanValue(false),"EnableBsrp",BooleanValue(false));
     mac.SetType("ns3::ApWifiMac","Ssid",SsidValue(ssid));
     NetDeviceContainer ap_device=wifi.Install(phy,mac,ap_node.Get(0));
 

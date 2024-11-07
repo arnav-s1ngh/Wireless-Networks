@@ -22,7 +22,7 @@ int totalReceptions=0;
 int totalCollisions=0;
 
 // Track request and response times
-std::map<uint32_t,Time> packetSendTimes;
+std::map<uint32_t,Time> packetSendTimes; // Map packet ID to send time
 
 void PacketReception(std::string context,Ptr<const Packet> packet,double snr,WifiMode mode,WifiPreamble preamble) {
     totalReceptions++;
@@ -32,48 +32,46 @@ void PacketCollision(std::string context,Ptr<const Packet> packet,double snr) {
     totalCollisions++;
 }
 
+// Callback for PHY transmission
 void PhyTxTrace(std::string context,Ptr<const Packet> packet,WifiMode mode,WifiPreamble preamble,uint8_t txPower) {
+    // Store the transmission time for each packet based on its ID
     packetSendTimes[packet->GetUid()]=Simulator::Now();
 }
 
+// Callback for PHY reception
 void PhyRxOkTrace(std::string context,Ptr<const Packet> packet,double snr,WifiMode mode,WifiPreamble preamble) {
     uint32_t packetId=packet->GetUid();
     
     if (packetSendTimes.find(packetId) != packetSendTimes.end()) {
+        // Calculate the response time
         Time sendTime=packetSendTimes[packetId];
         Time receiveTime=Simulator::Now();
         Time responseTime=receiveTime-sendTime;
         
+        //std::cout << "Packet ID: " << packetId << ",Response time: " << responseTime.GetMicroSeconds() << " microseconds" << std::endl;
         resp_time+=responseTime.GetMicroSeconds();
         packet_cnt+=1;
+        
+        // Remove the entry to keep the map clean
         packetSendTimes.erase(packetId);
     }
 }
 
 int main() {
-    // Enable HE (802.11ax) and OFDMA
-    Config::SetDefault("ns3::WifiPhy::ChannelWidth", UintegerValue(20));
-    Config::Set("/NodeList//DeviceList//$ns3::WifiNetDevice/HeConfiguration",BooleanValue(true)); 
-    Config::Set("/NodeList//DeviceList//$ns3::WifiNetDevice/Phy/ChannelSettings/ChannelWidth", UintegerValue(20));
-    
-    // Configure OFDMA parameters
-    Config::SetDefault("ns3::WifiDefaultAckManager::DlMuAckSequenceType", EnumValue(WifiAcknowledgment::DL_MU_BAR_BA_SEQUENCE));
-    Config::SetDefault("ns3::HeConfiguration::MuBeAifsn", UintegerValue(0));
-    Config::SetDefault("ns3::HeConfiguration::MuBeCwMin", UintegerValue(15));
-    Config::SetDefault("ns3::HeConfiguration::MuBeCwMax", UintegerValue(1023));
-    Config::SetDefault("ns3::HeConfiguration::BeMuEdcaTimer", TimeValue(MicroSeconds(400)));
-    
-    int nw=20; // Number of STAs
+    //Config::SetDefault("ns3::WifiDefaultAckManager::DlMuAckSequenceType",EnumValue(WifiAcknowledgment::DL_MU_BAR_BA_SEQUENCE));
+    //Config::SetDefault("ns3::WifiDefaultAckManager::DlMuAckSequenceType",EnumValue(WifiAcknowledgment::DL_MU_TF_MU_BAR));
+    //Config::SetDefault("ns3::WifiDefaultAckManager::DlMuAckSequenceType",EnumValue(WifiAcknowledgment::DL_MU_AGGREGATE_TF));
+    int nw=20; // Number of STAs in the WiFi network
     NodeContainer sta_nodes;
     sta_nodes.Create(nw);
     
-    NodeContainer ap_node;
+    NodeContainer ap_node; // AP
     ap_node.Create(1);
     
-    NodeContainer server_node;
+    NodeContainer server_node; // Server
     server_node.Create(1);
 
-    // P2P Connection setup
+    // Establish Server-AP P2P Connection
     PointToPointHelper p2pconn;
     p2pconn.SetDeviceAttribute("DataRate",StringValue("1000Mbps"));
     p2pconn.SetChannelAttribute("Delay",StringValue("100ms"));
@@ -83,55 +81,36 @@ int main() {
     p2p_nodes.Add(server_node);
     p2p_device=p2pconn.Install(p2p_nodes);
     
-    // WiFi setup
+    // Wifi setup
+    auto spectrumChannel = CreateObject<MultiModelSpectrumChannel>();
+    Ptr<LogDistancePropagationLossModel> lossModel = CreateObject<LogDistancePropagationLossModel>(); 
+    spectrumChannel->AddPropagationLossModel(lossModel);
+    Ptr<NakagamiPropagationLossModel> fadingModel = CreateObject<NakagamiPropagationLossModel> ();
+    spectrumChannel->AddPropagationLossModel (fadingModel);
+
     WifiHelper wifi;
     wifi.SetStandard(WIFI_STANDARD_80211ax);
-    // Keep the original MinstrelHt rate manager
     wifi.SetRemoteStationManager("ns3::MinstrelHtWifiManager");
-    
-    YansWifiPhyHelper phy;
-    YansWifiChannelHelper wifiChannel = YansWifiChannelHelper::Default();
-    wifiChannel.AddPropagationLoss("ns3::ThreeLogDistancePropagationLossModel");
-    wifiChannel.AddPropagationLoss("ns3::NakagamiPropagationLossModel");
-    phy.SetChannel(wifiChannel.Create());
-    
-    // Configure PHY for OFDMA
-    phy.Set("ChannelWidth", UintegerValue(20));
-    phy.Set("Antennas", UintegerValue(4));
-    phy.Set("MaxSupportedTxSpatialStreams", UintegerValue(4));
-    phy.Set("MaxSupportedRxSpatialStreams", UintegerValue(4));
+
+    SpectrumWifiPhyHelper phy;
+    phy.SetPcapDataLinkType(WifiPhyHelper::DLT_IEEE802_11_RADIO);
+    phy.SetChannel(spectrumChannel);
     
     WifiMacHelper mac;
-    Ssid ssid = Ssid("ns-3-ssid");
+    Ssid ssid=Ssid("ns-3-ssid");
 
-    // Configure AP with OFDMA settings
-    mac.SetType("ns3::ApWifiMac",
-                "EnableBeaconJitter", BooleanValue(false),
-                "EnableMultiUserTransmissions", BooleanValue(true),
-                "EnableUlOfdma", BooleanValue(false),
-                "EnableDlOfdma", BooleanValue(true),
-                "Ssid", SsidValue(ssid));
+    // STAs
+    mac.SetType("ns3::StaWifiMac","Ssid",SsidValue(ssid));
+    NetDeviceContainer sta_devices=wifi.Install(phy,mac,sta_nodes);
+
+    // AP
+    mac.SetMultiUserScheduler("ns3::RrMultiUserScheduler","EnableUlOfdma",BooleanValue(false),"EnableBsrp",BooleanValue(false),"AccessReqInterval",TimeValue(0));
+    mac.SetType("ns3::ApWifiMac","Ssid",SsidValue(ssid));
+    NetDeviceContainer ap_device=wifi.Install(phy,mac,ap_node.Get(0));
+
     
-    NetDeviceContainer ap_device = wifi.Install(phy, mac, ap_node.Get(0));
-
-    // Configure STAs for OFDMA
-    mac.SetType("ns3::StaWifiMac",
-                "EnableMultiUserTransmissions", BooleanValue(true),
-                "EnableUlOfdma", BooleanValue(false),
-                "EnableDlOfdma", BooleanValue(true),
-                "Ssid", SsidValue(ssid));
-    
-    NetDeviceContainer sta_devices = wifi.Install(phy, mac, sta_nodes);
-
-    // Mobility setup
     MobilityHelper mobility;
-    mobility.SetPositionAllocator("ns3::GridPositionAllocator",
-                                 "MinX", DoubleValue(0.0),
-                                 "MinY", DoubleValue(0.0),
-                                 "DeltaX", DoubleValue(1),
-                                 "DeltaY", DoubleValue(0.0),
-                                 "GridWidth", UintegerValue(2),
-                                 "LayoutType", StringValue("RowFirst"));
+    mobility.SetPositionAllocator("ns3::GridPositionAllocator","MinX",DoubleValue(0.0),"MinY",DoubleValue(0.0),"DeltaX",DoubleValue(1),"DeltaY",DoubleValue(0.0),"GridWidth",UintegerValue(2),"LayoutType",StringValue("RowFirst"));
     mobility.SetMobilityModel("ns3::ConstantPositionMobilityModel");
     mobility.Install(ap_node);
     mobility.Install(sta_nodes);
@@ -182,24 +161,25 @@ int main() {
         sinkApps2.Stop(Seconds(10.0));
         oo_port+=1;
     }
-    
     Ipv4GlobalRoutingHelper::PopulateRoutingTables(); 
     p2pconn.EnablePcapAll("wired_capture",false);
     phy.EnablePcapAll("wireless_capture",false);
 
-    // Connect callbacks
+    // Connect to reception and collision events
     Config::Connect("/NodeList/*/DeviceList/*/$ns3::WifiNetDevice/Phy/State/RxOk",MakeCallback(&PacketReception));
     Config::Connect("/NodeList/*/DeviceList/*/$ns3::WifiNetDevice/Phy/State/RxError",MakeCallback(&PacketCollision));
+    
+    // Connect to PHY Tx and RxOk events for response time calculation
     Config::Connect("/NodeList/*/DeviceList/*/$ns3::WifiNetDevice/Phy/State/Tx",MakeCallback(&PhyTxTrace));
     Config::Connect("/NodeList/*/DeviceList/*/$ns3::WifiNetDevice/Phy/State/RxOk",MakeCallback(&PhyRxOkTrace));
     
     Simulator::Stop(Seconds(10.0));
     Simulator::Run();
     
+    // Calculate collision percentage
     double collisionPercentage=(totalCollisions / (double)(totalReceptions+totalCollisions))*100;
     std::cout << "Collision Percentage: " << collisionPercentage << "%" << std::endl;
     std::cout<<"Average Response Time: "<<resp_time/packet_cnt<<" microseconds"<<std::endl;
 
     Simulator::Destroy();
-    return 0;
 }

@@ -124,6 +124,9 @@ void simulation(int ru_count, bool cent) {
     wifi.SetStandard(WIFI_STANDARD_80211ax);
     wifi.SetRemoteStationManager("ns3::MinstrelHtWifiManager");
 
+    AttributeContainerValue<TupleValue<UintegerValue, UintegerValue, EnumValue, UintegerValue>, ';'> value;
+    value.Set(WifiPhy::ChannelSegments{{38, 40, WIFI_PHY_BAND_5GHZ, 0}});
+
     SpectrumWifiPhyHelper phy;
     phy.SetPcapDataLinkType(WifiPhyHelper::DLT_IEEE802_11_RADIO);
     phy.SetChannel(spectrumChannel);
@@ -132,6 +135,7 @@ void simulation(int ru_count, bool cent) {
     Ssid ssid=Ssid("ns-3-ssid");
 
     // STAs
+    phy.Set("ChannelSettings", value);
     mac.SetType("ns3::StaWifiMac","Ssid",SsidValue(ssid));
     NetDeviceContainer sta_devices=wifi.Install(phy,mac,sta_nodes);
 

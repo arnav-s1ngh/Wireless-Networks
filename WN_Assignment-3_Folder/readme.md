@@ -1,3 +1,3 @@
 **Code for WN Assignment-3**
 
-ns3::HeRu::RuType config for RU tone size change
+aborted. cond="indexInLower80MHz > it->second.size()", msg="RU index not available", +1.106974000s

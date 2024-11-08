@@ -222,11 +222,11 @@ int main(){
    std::cout<<"4x106 Tones"<<std::endl;
    simulation(4,false);
    std::cout<<"4x106 + 2x26 Tones"<<std::endl;
-   simulation(4,true);
+   simulation(6,true);
    std::cout<<"8x52 Tones"<<std::endl;
    simulation(8,false);
    std::cout<<"8x52 + 2x26 Tones"<<std::endl;
-   simulation(8,true);
+   simulation(10,true);
    std::cout<<"18x26 Tones"<<std::endl;
    simulation(18,false);
    return 0;

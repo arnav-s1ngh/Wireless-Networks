@@ -88,8 +88,6 @@ void PhyRxOkTrace(std::string context,Ptr<const Packet> packet,double snr,WifiMo
 }
 
 void simulation(int ru_count, bool cent) {
-    Config::SetDefault("ns3::WifiPhy::ChannelSettings", StringValue("{38, 40, BAND_5GHZ, 0}"));
-
     //Config::SetDefault("ns3::WifiDefaultAckManager::DlMuAckSequenceType",EnumValue(WifiAcknowledgment::DL_MU_BAR_BA_SEQUENCE));
     //Config::SetDefault("ns3::WifiDefaultAckManager::DlMuAckSequenceType",EnumValue(WifiAcknowledgment::DL_MU_TF_MU_BAR));
     //Config::SetDefault("ns3::WifiDefaultAckManager::DlMuAckSequenceType",EnumValue(WifiAcknowledgment::DL_MU_AGGREGATE_TF));

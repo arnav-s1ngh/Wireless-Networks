@@ -122,8 +122,7 @@ void simulation(int ru_count, bool cent) {
     wifi.SetStandard(WIFI_STANDARD_80211ax);
     wifi.SetRemoteStationManager("ns3::MinstrelHtWifiManager");
 
-    AttributeContainerValue<TupleValue<UintegerValue, UintegerValue, EnumValue, UintegerValue>, ';'> value;
-    value.Set(WifiPhy::ChannelSegments{{38, 40, WIFI_PHY_BAND_5GHZ, 0}});
+    StringValue value("{38, 40, BAND_5GHZ, 0}");
 
     SpectrumWifiPhyHelper phy;
     phy.SetPcapDataLinkType(WifiPhyHelper::DLT_IEEE802_11_RADIO);

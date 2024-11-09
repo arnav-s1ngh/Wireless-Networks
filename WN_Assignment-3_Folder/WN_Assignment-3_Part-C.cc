@@ -215,17 +215,23 @@ void simulation(int ru_count, bool cent) {
 }
 
 int main(){
-   std::cout<<"2x242 Tones"<<std::endl;
+   std::cout<<"2x484 Tones"<<std::endl;
    simulation(2,false);
-   std::cout<<"4x106 Tones"<<std::endl;
+   std::cout<<"2x484 +26 Tones"<<std::endl;
+   simulation(3,true);
+   std::cout<<"4x242 Tones"<<std::endl;
    simulation(4,false);
-   std::cout<<"4x106 + 2x26 Tones"<<std::endl;
-   simulation(6,true);
-   std::cout<<"8x52 Tones"<<std::endl;
+   std::cout<<"4x242 +26 Tones"<<std::endl;
+   simulation(5,true);
+   std::cout<<"8x106 Tones"<<std::endl;
    simulation(8,false);
-   std::cout<<"8x52 + 2x26 Tones"<<std::endl;
+   std::cout<<"8x106 +2x26 Tones"<<std::endl;
    simulation(10,true);
-   std::cout<<"18x26 Tones"<<std::endl;
-   simulation(18,false);
+   std::cout<<"16x52 Tones"<<std::endl;
+   simulation(16,false);
+   std::cout<<"16x52 +2x26 Tones"<<std::endl;
+   simulation(18,true);
+   std::cout<<"37x26 Tones"<<std::endl;
+   simulation(37,false);
    return 0;
 }

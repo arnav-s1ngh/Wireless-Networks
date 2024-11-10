@@ -202,8 +202,8 @@ void simulation(int ru_count, bool cent) {
     Simulator::Run();
     
     // Calculate collision percentage
-    double collisionPercentage=(totalcollisions / (double)(totalreception+totalcollisions))*100;
-    std::cout << "collision Percentage: " << collisionPercentage << "%" << std::endl;
+    double collisionpercentage=(totalcollisions / (double)(totalreception+totalcollisions))*100;
+    std::cout << "collision percentage: " << collisionPercentage << "%" << std::endl;
     std::cout<<"Average Response Time: "<<resp_time/packet_cnt<<" microseconds"<<std::endl;
 
     Simulator::Destroy();

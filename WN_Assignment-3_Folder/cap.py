@@ -1,9 +1,10 @@
-import matplotlib.pyplot as plt
 import pandas as pd
-cap=pd.read_csv("wireless_capture.csv")
-lst=list(cap["Time"])
-tim=[]
-for i in range(20):
-  tim.append(lst[len(lst)-(i+1)]-lst[i])
-plt.plot(list(range(1,21)),tim)
-plt.show()
+cap=pd.read_csv("tcpsend.csv")
+for i in range(2, 22):
+    dest="10.1.2." + str(i)
+    tim=[]
+    for noth, row in cap.iterrows():
+        if row['Destination'] == dest:
+            tim.append(row['Time'])
+    if tim!=[]:
+        print(dest,max(tim)-min(tim))

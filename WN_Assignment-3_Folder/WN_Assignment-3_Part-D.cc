@@ -43,16 +43,13 @@
 using namespace ns3;
 NS_LOG_COMPONENT_DEFINE("WN_Assign-3");
 
-// Response Time
 int packet_cnt=0;
 double resp_time=0;
 
-// Collision and reception counters
 int totalReceptions=0;
 int totalCollisions=0;
 
-// Track request and response times
-std::map<uint32_t,Time> packetSendTimes; // Map packet ID to send time
+std::map<uint32_t,Time> packetsendtimes; // Map packet ID to send time
 
 void PacketReception(std::string context,Ptr<const Packet> packet,double snr,WifiMode mode,WifiPreamble preamble) {
     totalReceptions++;
@@ -62,28 +59,23 @@ void PacketCollision(std::string context,Ptr<const Packet> packet,double snr) {
     totalCollisions++;
 }
 
-// Callback for PHY transmission
 void PhyTxTrace(std::string context,Ptr<const Packet> packet,WifiMode mode,WifiPreamble preamble,uint8_t txPower) {
-    // Store the transmission time for each packet based on its ID
-    packetSendTimes[packet->GetUid()]=Simulator::Now();
+    packetsendtimes[packet->GetUid()]=Simulator::Now();
 }
 
-// Callback for PHY reception
 void PhyRxOkTrace(std::string context,Ptr<const Packet> packet,double snr,WifiMode mode,WifiPreamble preamble) {
-    uint32_t packetId=packet->GetUid();
+    uint32_t packetid=packet->GetUid();
     
-    if (packetSendTimes.find(packetId) != packetSendTimes.end()) {
-        // Calculate the response time
-        Time sendTime=packetSendTimes[packetId];
-        Time receiveTime=Simulator::Now();
-        Time responseTime=receiveTime-sendTime;
+    if (packetsendtimes.find(packetid) != packetsendtimes.end()) {
+        Time sendtime=packetsendtimes[packetid];
+        Time receivetime=Simulator::Now();
+        Time responsetime=receivetime-sendtime;
         
-        //std::cout << "Packet ID: " << packetId << ",Response time: " << responseTime.GetMicroSeconds() << " microseconds" << std::endl;
-        resp_time+=responseTime.GetMicroSeconds();
+        //std::cout << "Packet ID: " << packetid << ",Response time: " << responsetime.GetMicroSeconds() << " microseconds" << std::endl;
+        resp_time+=responsetime.GetMicroSeconds();
         packet_cnt+=1;
         
-        // Remove the entry to keep the map clean
-        packetSendTimes.erase(packetId);
+        packetsendtimes.erase(packetid);
     }
 }
 

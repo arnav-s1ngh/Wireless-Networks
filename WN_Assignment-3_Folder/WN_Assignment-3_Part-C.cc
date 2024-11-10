@@ -43,38 +43,46 @@
 using namespace ns3;
 NS_LOG_COMPONENT_DEFINE("WN_Assign-3");
 
+// Response Time
 int packet_cnt=0;
 double resp_time=0;
 
-int totalreception=0;
+// Collision and reception counters
+int totalreceptions=0;
 int totalcollisions=0;
 
+// Track request and response times
 std::map<uint32_t,Time> packetsendtimes; // Map packet ID to send time
 
-void packetReception(std::string context,Ptr<const Packet> packet,double snr,WifiMode mode,WifiPreamble preamble) {
-    totalreception++;
+void PacketReception(std::string context,Ptr<const Packet> packet,double snr,WifiMode mode,WifiPreamble preamble) {
+    totalreceptions++;
 }
 
-void packetcollision(std::string context,Ptr<const Packet> packet,double snr) {
+void PacketCollision(std::string context,Ptr<const Packet> packet,double snr) {
     totalcollisions++;
 }
 
+// Callback for PHY transmission
 void PhyTxTrace(std::string context,Ptr<const Packet> packet,WifiMode mode,WifiPreamble preamble,uint8_t txPower) {
+    // Store the transmission time for each packet based on its ID
     packetsendtimes[packet->GetUid()]=Simulator::Now();
 }
 
+// Callback for PHY reception
 void PhyRxOkTrace(std::string context,Ptr<const Packet> packet,double snr,WifiMode mode,WifiPreamble preamble) {
     uint32_t packetid=packet->GetUid();
     
     if (packetsendtimes.find(packetid) != packetsendtimes.end()) {
+        // Calculate the response time
         Time sendtime=packetsendtimes[packetid];
         Time receivetime=Simulator::Now();
         Time responsetime=receivetime-sendtime;
         
-        //std::cout << "packet ID: " << packetid << ",Response time: " << responsetime.GetMicroSeconds() << " microseconds" << std::endl;
+        //std::cout << "Packet ID: " << packetid << ",Response time: " << responsetime.GetMicroSeconds() << " microseconds" << std::endl;
         resp_time+=responsetime.GetMicroSeconds();
         packet_cnt+=1;
         
+        // Remove the entry to keep the map clean
         packetsendtimes.erase(packetid);
     }
 }
@@ -168,7 +176,7 @@ void simulation(int ru_count, bool cent) {
         sourceApps.Start(Seconds(0.0));
         sourceApps.Stop(Seconds(10.0));
         
-        packetSinkHelper sink("ns3::TcpSocketFactory",InetSocketAddress(Ipv4Address::GetAny(),bs_port));
+        PacketSinkHelper sink("ns3::TcpSocketFactory",InetSocketAddress(Ipv4Address::GetAny(),bs_port));
         ApplicationContainer sinkApps=sink.Install(sta_nodes.Get(i));
         sinkApps.Start(Seconds(0.0));
         sinkApps.Stop(Seconds(10.0));
@@ -180,7 +188,7 @@ void simulation(int ru_count, bool cent) {
         sourceApps2.Start(Seconds(1.0));
         sourceApps2.Stop(Seconds(10.0));
         
-        packetSinkHelper sink2("ns3::TcpSocketFactory",InetSocketAddress(Ipv4Address::GetAny(),oo_port));
+        PacketSinkHelper sink2("ns3::TcpSocketFactory",InetSocketAddress(Ipv4Address::GetAny(),oo_port));
         ApplicationContainer sinkApps2=sink2.Install(server_node.Get(0));
         sinkApps2.Start(Seconds(0.0));
         sinkApps2.Stop(Seconds(10.0));
@@ -191,8 +199,8 @@ void simulation(int ru_count, bool cent) {
     phy.EnablePcapAll("wireless_capture",false);
 
     // Connect to reception and collision events
-    Config::Connect("/NodeList/*/DeviceList/*/$ns3::WifiNetDevice/Phy/State/RxOk",MakeCallback(&packetReception));
-    Config::Connect("/NodeList/*/DeviceList/*/$ns3::WifiNetDevice/Phy/State/RxError",MakeCallback(&packetcollision));
+    Config::Connect("/NodeList/*/DeviceList/*/$ns3::WifiNetDevice/Phy/State/RxOk",MakeCallback(&PacketReception));
+    Config::Connect("/NodeList/*/DeviceList/*/$ns3::WifiNetDevice/Phy/State/RxError",MakeCallback(&PacketCollision));
     
     // Connect to PHY Tx and RxOk events for response time calculation
     Config::Connect("/NodeList/*/DeviceList/*/$ns3::WifiNetDevice/Phy/State/Tx",MakeCallback(&PhyTxTrace));
@@ -202,8 +210,8 @@ void simulation(int ru_count, bool cent) {
     Simulator::Run();
     
     // Calculate collision percentage
-    double collisionpercentage=(totalcollisions / (double)(totalreception+totalcollisions))*100;
-    std::cout << "collision percentage: " << collisionpercentage << "%" << std::endl;
+    double collisionpercentage=(totalcollisions / (double)(totalreceptions+totalcollisions))*100;
+    std::cout << "Collision Percentage: " << collisionpercentage << "%" << std::endl;
     std::cout<<"Average Response Time: "<<resp_time/packet_cnt<<" microseconds"<<std::endl;
 
     Simulator::Destroy();

@@ -14,8 +14,8 @@ using namespace ns3;
 NS_LOG_COMPONENT_DEFINE ("WN_Assign-3");
 
 // Collision and reception counters
-int totalReceptions = 0;
-int totalCollisions = 0;
+int totalReceptions=0;
+int totalCollisions=0;
 
 void PacketReception(std::string context, Ptr<const Packet> packet, double snr, WifiMode mode, WifiPreamble preamble) {
     totalReceptions++;
@@ -135,8 +135,8 @@ int main(){
     Simulator::Run();
     
     // Calculate collision percentage
-    double collisionPercentage = (totalCollisions / (double)(totalReceptions + totalCollisions)) * 100;
-    std::cout << "Collision Percentage: " << collisionPercentage << "%" << std::endl;
+    double collisionPercentage=(totalCollisions/(double)(totalReceptions+totalCollisions))*100;
+    std::cout<<"Collision Percentage: "<<collisionPercentage<<"%"<<std::endl;
 
     Simulator::Destroy();
 }

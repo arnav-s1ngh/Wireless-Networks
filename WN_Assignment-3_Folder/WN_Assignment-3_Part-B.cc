@@ -43,16 +43,13 @@
 using namespace ns3;
 NS_LOG_COMPONENT_DEFINE("WN_Assign-3");
 
-// Response Time
 int packet_cnt=0;
 double resp_time=0;
 
-// Collision and reception counters
 int totalreceptions=0;
 int totalcollisions=0;
 
-// Track request and response times
-std::map<uint32_t,Time> packetsendtimes; // Map packet ID to send time
+std::map<uint32_t,Time> packetsendtimes; 
 
 void PacketReception(std::string context,Ptr<const Packet> packet,double snr,WifiMode mode,WifiPreamble preamble) {
     totalreceptions++;
@@ -62,18 +59,14 @@ void PacketCollision(std::string context,Ptr<const Packet> packet,double snr) {
     totalcollisions++;
 }
 
-// Callback for PHY transmission
 void PhyTxTrace(std::string context,Ptr<const Packet> packet,WifiMode mode,WifiPreamble preamble,uint8_t txPower) {
-    // Store the transmission time for each packet based on its ID
     packetsendtimes[packet->GetUid()]=Simulator::Now();
 }
 
-// Callback for PHY reception
 void PhyRxOkTrace(std::string context,Ptr<const Packet> packet,double snr,WifiMode mode,WifiPreamble preamble) {
     uint32_t packetid=packet->GetUid();
     
     if (packetsendtimes.find(packetid) != packetsendtimes.end()) {
-        // Calculate the response time
         Time sendtime=packetsendtimes[packetid];
         Time receivetime=Simulator::Now();
         Time responsetime=receivetime-sendtime;
@@ -81,8 +74,6 @@ void PhyRxOkTrace(std::string context,Ptr<const Packet> packet,double snr,WifiMo
         //std::cout << "Packet ID: " << packetid << ",Response time: " << responsetime.GetMicroSeconds() << " microseconds" << std::endl;
         resp_time+=responsetime.GetMicroSeconds();
         packet_cnt+=1;
-        
-        // Remove the entry to keep the map clean
         packetsendtimes.erase(packetid);
     }
 }

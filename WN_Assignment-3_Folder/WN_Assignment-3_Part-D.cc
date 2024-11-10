@@ -51,19 +51,19 @@ int totalcollisions=0;
 
 std::map<uint32_t,Time> packetsendtimes; // Map packet ID to send time
 
-void packetReception(std::string context,Ptr<const packet> packet,double snr,WifiMode mode,WifiPreamble preamble) {
+void packetReception(std::string context,Ptr<const Packet> packet,double snr,WifiMode mode,WifiPreamble preamble) {
     totalreception++;
 }
 
-void packetcollision(std::string context,Ptr<const packet> packet,double snr) {
+void packetcollision(std::string context,Ptr<const Packet> packet,double snr) {
     totalcollisions++;
 }
 
-void PhyTxTrace(std::string context,Ptr<const packet> packet,WifiMode mode,WifiPreamble preamble,uint8_t txPower) {
+void PhyTxTrace(std::string context,Ptr<const Packet> packet,WifiMode mode,WifiPreamble preamble,uint8_t txPower) {
     packetsendtimes[packet->GetUid()]=Simulator::Now();
 }
 
-void PhyRxOkTrace(std::string context,Ptr<const packet> packet,double snr,WifiMode mode,WifiPreamble preamble) {
+void PhyRxOkTrace(std::string context,Ptr<const Packet> packet,double snr,WifiMode mode,WifiPreamble preamble) {
     uint32_t packetid=packet->GetUid();
     
     if (packetsendtimes.find(packetid) != packetsendtimes.end()) {
@@ -203,7 +203,7 @@ void simulation(int ru_count, bool cent) {
     
     // Calculate collision percentage
     double collisionpercentage=(totalcollisions / (double)(totalreception+totalcollisions))*100;
-    std::cout << "collision percentage: " << collisionPercentage << "%" << std::endl;
+    std::cout << "collision percentage: " << collisionpercentage << "%" << std::endl;
     std::cout<<"Average Response Time: "<<resp_time/packet_cnt<<" microseconds"<<std::endl;
 
     Simulator::Destroy();
